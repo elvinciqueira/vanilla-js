@@ -10,3 +10,11 @@ const newData = data.reduce((acc, { menus, ...restaurant }) => ({
     ...menus.map((menu) => [menu.id, { ...menu, restaurantId: restaurant.id }]),
   ]
 }), { restaurants: [], menus: [] });
+
+const restaurants = new Map(newData.restaurants);
+const menus = new Map(newData.menus);
+
+export default {
+  restaurants,
+  menus,
+}
