@@ -6,6 +6,9 @@
   "repository": "git@github.com:elvinciqueira/vanilla-js.git",
   "author": "elvinciqueira <elvinciqueira@gmail.com>",
   "license": "MIT",
+  "scripts": {
+    "start": "nodemon server.js"
+  },
   "devDependencies": {
     "nodemon": "^2.0.14"
   },
