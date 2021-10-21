@@ -6,6 +6,20 @@ function isChildren(children) {
   return Array.isArray(children) || typeof children === 'string';
 }
 
+const isString = (value) => typeof value === 'string';
+
+const toArray = (value) => (Array.isArray(value) ? value : [value]);
+
+function normalizeChildrens(children) {
+  if (isString(children)) return document.createTextNode(children);
+  if (Array.isArray(children)) {
+    return children.map(($child) =>
+      isString($child) ? document.createTextNode($child) : $child
+    );
+  }
+  return children;
+}
+
 function el(tagName, props, children) {
   const $el = document.createElement(tagName);
   const _children = isChildren(props) ? props : children;
@@ -13,14 +27,10 @@ function el(tagName, props, children) {
   Object.entries(_props).forEach(([key, value]) => {
     $el.setAttribute(key, value);
   });
-  if (typeof _children === 'string') {
-    $el.appendChild(document.createTextNode(_children));
-  } else {
-    for (let $child of _children) {
-      $el.appendChild($child);
-    }
-  }
-
+  const $children = normalizeChildrens(_children);
+  toArray($children).forEach(($child) => {
+    $el.appendChild($child);
+  });
   return $el;
 }
 
@@ -35,6 +45,7 @@ function tplCardapio(menu) {
         { style: 'color: red' },
         `${menu.title} - ${menu.restaurant.name}`
       ),
+      el('div', [el('span', 'Oii'), 'Mundo', el('strong', '!!!')]),
     ]),
     el('div', [
       el(
