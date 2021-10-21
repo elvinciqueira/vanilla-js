@@ -2,6 +2,7 @@ import data from './restaurants.js';
 
 const newData = data.reduce(
   (acc, { menus, ...restaurant }) => ({
+    ...acc,
     restaurants: [
       ...acc.restaurants,
       [restaurant.id, { ...restaurant, menus: menus.map((menu) => menu.id) }],
