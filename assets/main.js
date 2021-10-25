@@ -20,8 +20,31 @@ function normalizeChildrens(children) {
   return children;
 }
 
+function extractTagName(tagName) {
+  return tagName.match(/^\w+/)[0];
+}
+
+function extractClassesAndId(tagName) {
+  const regexp = /[\#\.]{1}([\w\-\_]*)/gi;
+  return Array.from(tagName.matchAll(regexp)).reduce(
+    function (acc, current) {
+      if (current[0].startsWith('.')) {
+        acc.classes.push(current[1]);
+      } else {
+        acc.id.push(current[1]);
+      }
+
+      return acc;
+    },
+    { classes: [], id: [] }
+  );
+}
+
 function el(tagName, props, children) {
-  const $el = document.createElement(tagName);
+  const $el = document.createElement(extractTagName(tagName));
+  const { classes, id } = extractClassesAndId(tagName);
+  if (id.length) $el.id = id.pop();
+  if (classes.length) $el.classList.add(...classes);
   const _children = isChildren(props) ? props : children;
   const _props = !isChildren(props) ? props : [];
   Object.entries(_props).forEach(([key, value]) => {
@@ -56,36 +79,6 @@ function tplCardapio(menu) {
       ),
     ]),
   ]);
-  // const $cardapio = document.createElement('div');
-  // $cardapio.classList.add('cardapio');
-
-  // const $header = document.createElement('header');
-
-  // const $h3 = document.createElement('h3');
-  // $h3.textContent = `${menu.title} - ${menu.restaurant.name}`;
-
-  // $h3.setAttribute('style', 'color: red');
-
-  // $header.appendChild($h3);
-
-  // $cardapio.appendChild($header);
-
-  // const $cardapioBody = document.createElement('div');
-  // $cardapioBody.classList.add('cardapio-body');
-
-  // const $ul = document.createElement('ul');
-
-  // for (let section of menu.sections) {
-  //   const $li = document.createElement('li');
-  //   $li.textContent = section.title;
-  //   $ul.appendChild($li);
-  // }
-
-  // $cardapioBody.appendChild($ul);
-
-  // $cardapio.appendChild($cardapioBody);
-
-  // return $cardapio;
 }
 
 Array.from(data.menus.values())
