@@ -2,7 +2,7 @@ import http from 'http';
 import fs from 'fs';
 import ejs from 'ejs';
 import data from './assets/data.js';
-import CardCardapio from './assets/components/CardCardapio.js';
+import CardapioList from './assets/components/CardapioList.js';
 import { renderServer } from './assets/lib/dom.js';
 
 const server = http.createServer(function (req, res) {
@@ -35,11 +35,7 @@ const server = http.createServer(function (req, res) {
 
     const dataTpl = {
       App() {
-        return menus
-          .map(function (menu) {
-            return renderServer(CardCardapio(menu));
-          })
-          .join('');
+        return renderServer(CardapioList(menus));
       },
     };
 

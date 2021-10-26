@@ -1,23 +1,20 @@
 import data from './data.js';
-import el from './lib/dom.js';
-import CardCardapio from './components/CardCardapio.js';
+import CardapioList from './components/CardapioList.js';
+import { render } from './lib/dom.js';
 
 const log = console.log;
 
-const $cardapios = document.querySelector('.cardapios');
-const $fragment = document.createDocumentFragment();
+const $cardapios = document.querySelector('#app');
 
-Array.from(data.menus.values())
-  .slice(0, 3)
-  .map((menu) => ({
-    ...menu,
-    restaurant: {
-      name: data.restaurants.get(menu.restaurantId).name,
-    },
-  }))
-  .forEach((menu) => {
-    console.log(CardCardapio(menu));
-    // $fragment.appendChild(tplCardapio(menu));
+const menus = Array.from(data.menus.values())
+  .slice(3)
+  .map(function (menu) {
+    return {
+      ...menu,
+      restaurant: {
+        name: data.restaurants.get(menu.restaurantId).name,
+      },
+    };
   });
 
-// $cardapios.appendChild($fragment);
+$cardapios.appendChild(render(CardapioList(menus)));

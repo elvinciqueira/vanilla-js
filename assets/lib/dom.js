@@ -24,6 +24,7 @@ function extractTagName(tagName) {
 
 function extractClassesAndId(tagName) {
   const regexp = /[\#\.]{1}([\w\-\_]*)/gi;
+
   return Array.from(tagName.matchAll(regexp)).reduce(
     function (acc, current) {
       if (current[0].startsWith('.')) {
@@ -31,7 +32,6 @@ function extractClassesAndId(tagName) {
       } else {
         acc.id.push(current[1]);
       }
-
       return acc;
     },
     { classes: [], id: [] }
@@ -39,16 +39,26 @@ function extractClassesAndId(tagName) {
 }
 
 export default function el(tag, props, childrensArr) {
+  if (typeof tag === 'function') {
+    return tag(props);
+  }
+
   const tagName = extractTagName(tag);
+
   const { classes, id } = extractClassesAndId(tag);
+
   const attrs = !isChildren(props) ? props : {};
+
   if (id.length) {
     attrs.id = id.pop();
   }
+
   if (classes.length) {
     attrs.classNames = classes;
   }
+
   const childrens = toArray(isChildren(props) ? props : childrensArr);
+
   return {
     tagName,
     nodeType: 'element',
@@ -61,7 +71,12 @@ export function renderServer(node) {
   if (isString(node)) {
     return node;
   }
+  if (node.nodeType === 'fragment') {
+    return node.childrens.map(renderServer).join('');
+  }
+
   const { tagName, attrs, childrens } = node;
+
   const attrsHTML = Object.entries(attrs)
     .map(function ([key, value]) {
       const values = Array.isArray(value) ? value.join(' ') : value;
@@ -69,16 +84,49 @@ export function renderServer(node) {
     })
     .join(' ')
     .replace('classNames', 'class');
+
   const startTag = `<${tagName}${attrsHTML && ' '}${attrsHTML}>`;
   const endTag = `</${tagName}>`;
-  const childrensHTML = childrens
-    .map(function (children) {
-      return renderServer(children);
-    })
-    .join('');
+
+  const childrensHTML = childrens.map(renderServer).join('');
+
   const html = `${startTag}${childrensHTML}${endTag}`;
   return html;
 }
+
+export function render(node) {
+  if (isString(node)) {
+    return document.createTextNode(node);
+  }
+
+  const { tagName, attrs, childrens } = node;
+
+  const $element =
+    node.nodeType === 'fragment'
+      ? document.createDocumentFragment()
+      : document.createElement(tagName);
+
+  Object.entries(attrs).forEach(function ([attrKey, attrValue]) {
+    const values = Array.isArray(attrValue) ? attrValue.join(' ') : attrValue;
+    $element.setAttribute(attrKey.replaceAll('classNames', 'class'), values);
+  });
+
+  childrens.forEach(function (children) {
+    $element.appendChild(render(children));
+  });
+
+  return $element;
+}
+
+export function Fragment(childrens) {
+  return {
+    tagName: null,
+    nodeType: 'fragment',
+    attrs: {},
+    childrens: childrens ? childrens : [],
+  };
+}
+
 /**
  * RESULTADO
  *
