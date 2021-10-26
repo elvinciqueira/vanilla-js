@@ -2,10 +2,15 @@ import http from 'http';
 import fs from 'fs';
 import ejs from 'ejs';
 import data from './assets/data.js';
+import CardCardapio from './assets/components/CardCardapio.js';
+import { renderServer } from './assets/lib/dom.js';
 
-const server = http.createServer((req, res) => {
+const server = http.createServer(function (req, res) {
+  console.log(req.url);
+
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', '*');
+
   if (req.url.match(/\.js$/)) {
     const fileStream = fs.createReadStream(`./assets${req.url}`);
     res.writeHead(200, {
@@ -16,18 +21,33 @@ const server = http.createServer((req, res) => {
     res.writeHead(200, {
       'Content-type': 'text/html',
     });
-    const templateData = {
-      menus: Array.from(data.menus.values())
-        .slice(0, 3)
-        .map((menu) => ({
+
+    const menus = Array.from(data.menus.values())
+      .slice(0, 3)
+      .map(function (menu) {
+        return {
           ...menu,
           restaurant: {
             name: data.restaurants.get(menu.restaurantId).name,
           },
-        })),
+        };
+      });
+
+    const dataTpl = {
+      App() {
+        return menus
+          .map(function (menu) {
+            return renderServer(CardCardapio(menu));
+          })
+          .join('');
+      },
     };
-    ejs.renderFile('./templates/index.ejs', templateData, (err, str) => {
-      if (err) console.log(err);
+
+    ejs.renderFile('./templates/index.ejs', dataTpl, function (err, str) {
+      if (err) {
+        console.error(err);
+      }
+
       res.write(str);
       res.end();
     });
